@@ -1,118 +1,63 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { memo, useState } from "react"
+import { Button, Text, View } from "react-native"
+import { UnityModule, UnityView } from "react-native-unity2"
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+const onMessage = (data: any) => {
+  // setunitymasg(prev => prev + 1)
+  console.log("Unity message: " + data)
+}
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const onReady = () => {
+  console.log("Ready!")
+}
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const UnityComponent = memo(({ count, onPressbtn }: { onPressbtn: () => void, count: number }) => {  
+  return(
+    <UnityView
+      onMessage={onMessage}
+      onReady={onReady}
+      style={{ flex: 3, justifyContent: "flex-end" }}
+      keepAwake={true}>
+      <View style={{ height: 100, width: 320 }}>
+        <Button title="Send Msg to RN" onPress={onPressbtn}/>
+        <Text style={{ fontSize: 20, color: 'red' }}> MSG Count RN {count}</Text>  
+      </View>
+    </UnityView>
+  )
+}, (p, n) => p.count !== n.count)
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+export default function App() {
+  const [rnmsg, setRnmsg] = useState(1)
+
+  const TestMsg = async () => {
+    await cubeApi.increaseCount()
+  }
+
+  const sendMsgtoBox = () => {
+    setRnmsg(prev => prev + 1)
+  }
+
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
+        <Button title="Send Msg to unity" onPress={TestMsg} />
+        <Text> MSG Count RN {rnmsg}</Text>
+      </View>
+      <UnityComponent count={cubeApi.getCount()} onPressbtn={sendMsgtoBox} />
     </View>
-  );
+  )
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const cubeApi = {
+  count: 0,
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  increaseCount() {
+    this.count++;
+    UnityModule.callMethod("Cube", "increaseCountRN", this.count);
+  },
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
+  getCount() {
+    // Get the count from Unity
+    return this.count;
+  }
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
-export default App;
