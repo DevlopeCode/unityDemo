@@ -5,7 +5,7 @@ const RnView = ({onPress,count}:{onPress:()=>void,count:any}) => {
   return (
     <View style={{ flex: 1 }}>
         <Button title="Send Msg to unity" onPress={async()=>onPress()} />
-        <Text> MSG Count RN {count}</Text>
+        <Text style={{fontWeight:'bold',fontSize:20}}> MSG Count Unity {count}</Text>
       </View>
   )
 }
